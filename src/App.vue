@@ -21,7 +21,6 @@ onMounted(async () => {
 
   let response = await http.post("/bill/check", data);
   result.value = response.data.data.message;
-  console.log(result.value);
 });
 </script>
 
