@@ -1,44 +1,32 @@
 <script setup>
-import { onMounted, ref } from "@vue/runtime-core";
+import { ref } from "@vue/runtime-core";
 import http from "./plugins/http-common";
 import md5 from "md5";
 
 let result = ref();
+let input_number = ref();
 
-onMounted(async () => {
+async function checkBill() {
   let uniq = "id" + new Date().getTime();
   let user = "0895401001560";
-  let sign = md5(user + "27262260fef7aab1272" + uniq);
-
+  let sign = md5(user + "280619b3ef89f80f" + uniq);
+  //  27262260fef7aab1272 production API
   let data = {
     commands: "inq-pasca",
     username: user,
     code: "PLNPOSTPAID",
     ref_id: uniq,
-    hp: "511421560800",
+    hp: input_number.value,
     sign: sign,
   };
 
   let response = await http.post("/bill/check", data);
+  console.log(response);
   result.value = response.data.data.message;
-});
+}
 </script>
 
 <template>
-  <!-- <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-      <h1 class="text-3xl font-bold">
-        Hello world!
-      </h1>
-    </div>
-  </header> -->
-
-  <!-- <main>
-    <TheWelcome />
-  </main> -->
   <main class="profile-page">
     <section class="relative py-16 bg-blueGray-200">
       <div class="container mx-auto px-4 w-1/2">
@@ -55,14 +43,16 @@ onMounted(async () => {
               <div class="mb-2 text-green-600">
                 <input
                   type="text"
-                  class="border-0 px-3 py-3 placeholder-gray-300 text-gray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                  class="border-0 px-3 py-3 placeholder-gray-300 text-gray-600 bg-white rounded-full text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                   placeholder="Customer Number"
+                  v-model="input_number"
                 />
               </div>
               <div class="text-center mt-6">
                 <button
                   class="bg-green-700 lg:w-1/2 sm:w-full text-white active:bg-green-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
                   type="button"
+                  @click="checkBill"
                 >
                   Check
                 </button>
