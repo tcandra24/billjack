@@ -11,7 +11,7 @@ async function checkBill() {
   let user = "0895401001560";
   let sign = md5(user + "280619b3ef89f80f" + uniq);
   //  27262260fef7aab1272 production API
-  let data = {
+  let dataForm = {
     commands: "inq-pasca",
     username: user,
     code: "PLNPOSTPAID",
@@ -20,9 +20,9 @@ async function checkBill() {
     sign: sign,
   };
 
-  let response = await http.post("/bill/check", data);
-  console.log(response);
-  result.value = response.data.data.message;
+  let { data } = await http.post("/bill/check", dataForm);
+  console.log(data);
+  result.value = data.data.message;
 }
 </script>
 
