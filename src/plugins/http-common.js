@@ -1,8 +1,7 @@
 import axios from "axios";
 export default axios.create({
-  baseURL: "https://testpostpaid.mobilepulsa.net/api/v1",
+  baseURL: import.meta.env.VITE_URL,
   headers: {
     "Content-type": "application/json",
   },
 });
-//  https://mobilepulsa.net/api/v1

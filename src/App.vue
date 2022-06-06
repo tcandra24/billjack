@@ -3,205 +3,226 @@ import { ref } from "@vue/runtime-core";
 import http from "./plugins/http-common";
 import md5 from "md5";
 import moment from 'moment';
+import city from './json/pdam/city'
+// sudah bisa get data pdam belum menata tiap property saat pdam dipilih
 
-let result = ref({});
 let result_bills = ref([]);
 let input_number = ref();
+let response_code = ref('');
+let id_customer = ref('');
+let message = ref('');
+let customer = ref('');
+let type_bill = ref('PLN');
+let pdam_code = ref('PDAMKOTA.SURABAYA');
+let api_key = ref(import.meta.env.VITE_API_KEY)
+let title = ref(import.meta.env.VITE_APP_TITLE)
 
-async function checkBill() {
+document.title = title.value
+
+const checkBill = async () => {
   let uniq = "id" + new Date().getTime();
   let user = "0895401001560";
-  let sign = md5(user + "280619b3ef89f80f" + uniq);
-  //  27262260fef7aab1272 production API
+  let sign = md5(user + api_key.value + uniq);
+  let code = ''
+  
+  if (type_bill.value == 'PLN') {
+    code = 'PLNPOSTPAID'
+  } else {
+    code = pdam_code.value
+  }
+
   let dataForm = {
     commands: "inq-pasca",
     username: user,
-    code: "PLNPOSTPAID",
+    code: code,
     ref_id: uniq,
     hp: input_number.value,
     sign: sign,
   };
 
   let { data } = await http.post("/bill/check", dataForm);
-  result.value = data.data;
-  result_bills.value = data.data.desc.tagihan.detail
-  console.log(result.value);
+  response_code.value = data.data.response_code
+  id_customer.value = data.data.hp
+  message.value = data.data.message
+  customer.value = data.data.tr_name
 
+  if(response_code.value === '00'){
+    result_bills.value = data.data.desc.tagihan.detail
+  } else {
+    result_bills.value = []
+  }
 }
 
-function formatPrice(value) {
+const format_price = (value) => {
   let val = (value/1).toFixed(0).replace('.', ',')
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+}
+
+const reset = () => {
+  input_number.value = ''
+  response_code.value = ''
+  id_customer.value = ''
+  message.value = ''
+  result_bills.value = []
 }
 </script>
 
 <template>
-  <!-- <main class="profile-page">
-    <section class="relative py-16 bg-blueGray-200">
-      <div class="container mx-auto px-4 w-1/2">
-        <div
-          class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-xl rounded-lg"
-        >
-          <div class="px-6">
-            <div class="text-center mt-12">
-              <h3
-                class="text-4xl font-semibold leading-normal text-blueGray-700 mb-2"
-              >
-                BillJack
-              </h3>
-              <div class="mb-2 text-green-600">
-                <input
-                  type="text"
-                  class="border-0 px-3 py-3 placeholder-gray-300 text-gray-600 bg-white rounded-full text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  placeholder="Customer Number"
-                  v-model="input_number"
-                />
-              </div>
-              <div class="text-center mt-6">
-                <button
-                  class="bg-green-700 lg:w-1/2 sm:w-full text-white active:bg-green-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
-                  type="button"
-                  @click="checkBill"
-                >
-                  Check
-                </button>
-              </div>
-            </div>
-            <div class="mt-10 py-10 border-t border-blueGray-200 text-center">
-              <div class="flex flex-wrap justify-center">
-                <div class="w-full lg:w-9/12 px-4">
-                  <p class="mb-4 text-lg leading-relaxed text-blueGray-700">
-                    {{ result }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main> -->
   <div class="absolute inset-0 bg-top bg-no-repeat bg-illustration-01"></div>
   <div class="absolute inset-0 bg-center bg-no-repeat bg-illustration-02"></div>
-  <div class="container relative">
+  <div class="container relative mx-auto">
     <div class="flex items-center justify-between py-6">
       <a href="#">
         <img class="block w-8 h-8" src="./assets/img/logo.svg" alt="" />
-      </a>
-      <a href="#">
-        <svg
-          class="w-6 h-6 fill-current md:hidden"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
-        </svg>
       </a>
       <div class="flex items-center mb-4 md:block">
         <a class="mr-8 font-semibold hover:text-white" href="#"
           >Documentation</a
         >
-        <a class="bg-indigo-600 btn hover:bg-indigo-500" href="#">Sign up</a>
+        <a class="bg-blue-600 btn hover:bg-blue-500" href="#">Sign up</a>
       </div>
     </div>
     <h1
       class="px-8 mt-16 mb-4 text-5xl font-extrabold leading-tight text-center text-white xl:text-6xl"
     >
-      Check your bill with <span class="text-indigo-700">BillJack</span>
+      Check your bill with <span class="text-blue-700">{{ title }}</span>
     </h1>
 
     <div class="my-8 mx-auto max-w-xl xl:max-w-2xl">
+      <select v-model="type_bill" @change="input_number = ''" class="border-0 px-3 py-3 w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
+        <option value="PLN">PLN</option>
+        <option value="PDAM">PDAM</option>
+      </select>
       <input
         type="text"
-        class="border-0 px-3 py-3 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full text-sm shadow focus:outline-none focus:ring ease-linear transition-all duration-150"
+        class="border-0 px-3 py-3 w-4/5 placeholder-gray-300 text-gray-600 bg-white rounded-r-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150"
         placeholder="Customer Number"
         v-model="input_number"
       />
+      <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="input_number = ''" class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
+        <option v-for="(city, index) in city" :value="city.code" > {{ city.name }} </option>
+      </select>
     </div>
 
     <p class="max-w-xl mx-auto mb-8 text-xl text-center xl:max-w-2xl">
-      Our landing page template works on all devices, so you only have to set it
-      up once, and get beautiful results forever.
+      This is the way that you can check your Bill easily.
     </p>
     <div
       class="flex flex-col justify-center max-w-xs mx-auto mb-12 sm:max-w-full sm:flex-row"
     >
       <button 
-        class="w-full mb-4 whitespace-no-wrap bg-indigo-600 btn btn-tall md:w-auto hover:bg-indigo-500 sm:mr-2" 
+        class="w-full mb-4 whitespace-no-wrap bg-blue-600 btn btn-tall md:w-auto hover:bg-blue-500 sm:mr-2" 
         @click="checkBill"
       >
         Check
       </button>
       <button
         class="w-full mb-4 whitespace-no-wrap bg-gray-800 btn btn-tall md:w-auto hover:bg-gray-600 sm:ml-2"
-        @click="input_number = ''"
+        @click="reset()"
       >
         Reset
       </button>
     </div>
-    <div>
-      <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
-      <p class="mb-16 mx-auto intro sm:max-w-xl">
-        "ID: {{ result.hp }}"
-      </p>
-      <ul
-        class="flex flex-col flex-wrap justify-center mb-20 border-b border-gray-900 sm:flex-row"
-      >
-        <li 
-          class="w-full px-1 mb-8 sm:mb-16 md:w-1/2 lg:w-1/3"
-          v-for="(bill, index) in result_bills"
-          :key="index"  
-        >
-          <span
-            class="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-3xl text-white bg-indigo-700 rounded-full"
+    <div v-if="response_code">
+      <div v-if="response_code === '00'">
+        <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
+        <p class="mb-16 mx-auto intro sm:max-w-xl">
+          "ID: {{ id_customer }}"
+        </p>
+        <div class="flex flex-col flex-wrap justify-center mb-10 px-10 sm:flex-row gap-x-1.5">
+          <div 
+            class="flex flex-col bg-white border border-gray-300 rounded-xl overflow-hidden items-center mb-8 w-full sm:mb-16 md:w-auto lg:w-auto" style="cursor: auto;"
+            v-for="(bill, index) in result_bills"
+            :key="index"
           >
-            <img src="./assets/img/feature-tile-icon-01.svg" alt="" />
-          </span>
-          <h3 class="mb-2 text-2xl font-bold text-white text-center">{{ moment(bill.periode + '10').format("MMMM YYYY")  }}</h3>
-          <div class="text-left">
-            <p class="max-w-xs mx-auto text-lg text-gray-500 w-1/3 flex justify-between">
-              <span>
-                Bill
-              </span>
-              <span>
-                 {{ formatPrice(bill.nilai_tagihan) }}
-              </span>
-            </p>
-            <p class="max-w-xs mx-auto text-md text-gray-500 w-1/3 flex justify-between">
-              <span>
-                Adm
-              </span>
-              <span>
-                {{ formatPrice(bill.admin) }}
-              </span>
-            </p>
-            <p class="max-w-xs mx-auto text-md text-gray-500 w-1/3 flex justify-between">
-              <span>
-                Fine
-              </span>
-              <span>
-                {{ formatPrice(bill.denda) }}
-              </span>
-            </p>
-            <div class="max-w-xs mx-auto my-1 w-1/3 border-b border-dashed border-gray-900"></div>
-            <p class="max-w-xs mx-auto text-lg text-indigo-600 w-1/3 flex justify-between">
-              <span>
-                Total
-              </span>
-              <span>
-                {{ formatPrice(bill.total) }}
-              </span>
-            </p>
+            <div class="flex px-2 py-1 w-full">
+              <div class="relative w-16 h-16 flex-shrink-0">    
+                <div class="w-full h-full flex items-center justify-center">                            
+                  <img alt="Placeholder Photo" class="w-full h-full rounded-full object-cover object-center transition duration-50" loading="lazy" :src="`https://ui-avatars.com/api/?name=${customer}&amp;background=4e73df&amp;color=ffffff&amp;size=100`">                        
+                </div>                     
+              </div>                        
+              <div class="px-4">                     
+                <h1 class="text-md line-clamp-1 title text-gray-500 text-lg mb-0">{{ customer }}</h1>             
+                <h2 class="text-sm text-gray-600 mt-1 line-clamp-2">{{ id_customer }}</h2>               
+                <span class="flex items-center justify-start text-gray-500">                         
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"></path>
+                  </svg>
+                  {{ moment(bill.periode + '10').format("MMMM YYYY")  }}                      
+                </span>               
+              </div>
+            </div>
+            <div class="px-2 py-1 w-full">
+              <div class="my-1 border-t w-full"></div>
+              <p class="text-sm line-clamp-1">Bill: Rp. {{ format_price(bill.nilai_tagihan) }}</p>             
+              <p class="text-sm line-clamp-1">Adm: Rp. {{ format_price(bill.admin) }}</p>             
+              <p class="text-sm line-clamp-1">Fine: Rp. {{ format_price(bill.denda) }}</p>             
+              <p class="text-sm line-clamp-2">Total: Rp. {{ format_price(bill.total) }}</p>
+            </div>
           </div>
-        </li>
-      </ul>
+        </div>
+        <!-- <ul
+          class="flex flex-col flex-wrap justify-center mb-20 border-b border-gray-900 sm:flex-row"
+        >
+          <li 
+            class="w-full px-1 mb-8 sm:mb-16 md:w-1/2 lg:w-1/3 border b-white"
+            v-for="(bill, index) in result_bills"
+            :key="index"  
+          >
+            <span
+              class="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-3xl text-white bg-blue-700 rounded-full"
+            >
+              <img src="./assets/img/feature-tile-icon-01.svg" alt="" />
+            </span>
+            <h3 class="mb-2 text-2xl font-bold text-white text-center">{{ moment(bill.periode + '10').format("MMMM YYYY")  }}</h3>
+            <div class="text-left">
+              <p class="max-w-xs mx-auto text-lg text-gray-500 w-1/3 flex justify-between">
+                <span>
+                  Bill
+                </span>
+                <span>
+                  {{ format_price(bill.nilai_tagihan) }}
+                </span>
+              </p>
+              <p class="max-w-xs mx-auto text-md text-gray-500 w-1/3 flex justify-between">
+                <span>
+                  Adm
+                </span>
+                <span>
+                  {{ format_price(bill.admin) }}
+                </span>
+              </p>
+              <p class="max-w-xs mx-auto text-md text-gray-500 w-1/3 flex justify-between">
+                <span>
+                  Fine
+                </span>
+                <span>
+                  {{ format_price(bill.denda) }}
+                </span>
+              </p>
+              <div class="max-w-xs mx-auto my-1 w-1/3 border-b border-dashed border-gray-900"></div>
+              <p class="max-w-xs mx-auto text-lg text-blue-600 w-1/3 flex justify-between">
+                <span>
+                  Total
+                </span>
+                <span>
+                  {{ format_price(bill.total) }}
+                </span>
+              </p>
+            </div>
+          </li>
+        </ul> -->
+      </div>
+      <div v-else>
+        <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
+        <p class="mb-16 mx-auto intro sm:max-w-xl">
+          "{{ message }}"
+        </p>
+      </div>
     </div>
     <div class="flex flex-col items-center sm:flex-row sm:justify-between">
-      <a class="text-indigo-700" href="#">
-        <img src="./assets/img/logo.svg" alt="" class="mx-auto mb-4" />
-      </a>
       <div class="flex flex-row justify-center mb-4 -ml-4 -mr-4">
-        <a href="#" class="p-4 text-indigo-700 hover:text-indigo-400">
+        <a href="#" class="p-4 text-blue-700 hover:text-blue-400">
           <svg
             class="fill-current"
             width="16"
@@ -215,7 +236,7 @@ function formatPrice(value) {
             ></path>
           </svg>
         </a>
-        <a href="#" class="p-4 text-indigo-700 hover:text-indigo-400">
+        <a href="#" class="p-4 text-blue-700 hover:text-blue-400">
           <svg
             class="fill-current"
             width="16"
@@ -229,7 +250,7 @@ function formatPrice(value) {
             ></path>
           </svg>
         </a>
-        <a href="#" class="p-4 text-indigo-700 hover:text-indigo-400">
+        <a href="#" class="p-4 text-blue-700 hover:text-blue-400">
           <svg
             class="fill-current"
             width="16"
@@ -258,17 +279,6 @@ function formatPrice(value) {
         <a href="https://cruip.com/" class="text-white">Cruip</a>. Coded by
         <a href="https://michelegera.dev/" class="text-white">michelegera</a>
       </p>
-      <ul class="flex flex-row justify-center mb-6 -ml-4 -mr-4 text-sm">
-        <li>
-          <a href="#" class="px-4 text-gray-500 hover:text-white">Contact</a>
-        </li>
-        <li>
-          <a href="#" class="px-4 text-gray-500 hover:text-white">About us</a>
-        </li>
-        <li>
-          <a href="#" class="px-4 text-gray-500 hover:text-white">FAQ's</a>
-        </li>
-      </ul>
     </div>
   </div>
 </template>
