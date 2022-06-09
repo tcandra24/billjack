@@ -9,13 +9,12 @@ import city from './json/pdam/city'
 let result_bills = ref([]);
 let input_number = ref();
 let response_code = ref('');
-let id_customer = ref('');
-let message = ref('');
-let customer = ref('');
+let detail_data = ref({});
 let type_bill = ref('PLN');
 let pdam_code = ref('PDAMKOTA.SURABAYA');
 let api_key = ref(import.meta.env.VITE_API_KEY)
 let title = ref(import.meta.env.VITE_APP_TITLE)
+let version = ref(import.meta.env.VITE_APP_VERSION)
 
 document.title = title.value
 
@@ -42,9 +41,18 @@ const checkBill = async () => {
 
   let { data } = await http.post("/bill/check", dataForm);
   response_code.value = data.data.response_code
-  id_customer.value = data.data.hp
-  message.value = data.data.message
-  customer.value = data.data.tr_name
+
+  detail_data.value = {
+    id_customer: data.data.hp,
+    message: data.data.message,
+    customer: data.data.tr_name,
+    admin: data.data.admin,
+    nominal: data.data.nominal,
+    price: data.data.price,
+    period: data.data.period,
+  }
+
+  console.log(data.data)
 
   if(response_code.value === '00'){
     result_bills.value = data.data.desc.tagihan.detail
@@ -61,9 +69,8 @@ const format_price = (value) => {
 const reset = () => {
   input_number.value = ''
   response_code.value = ''
-  id_customer.value = ''
-  message.value = ''
   result_bills.value = []
+  detail_data.value = {}
 }
 </script>
 
@@ -77,9 +84,9 @@ const reset = () => {
       </a>
       <div class="flex items-center mb-4 md:block">
         <a class="mr-8 font-semibold hover:text-white" href="#"
-          >Documentation</a
+          >About</a
         >
-        <a class="bg-blue-600 btn hover:bg-blue-500" href="#">Sign up</a>
+        <p class="btn text-gray-400 hover:text-white">{{ version }} </p>
       </div>
     </div>
     <h1
@@ -91,7 +98,7 @@ const reset = () => {
     <div class="my-8 mx-auto max-w-xl xl:max-w-2xl">
       <select v-model="type_bill" @change="input_number = ''" class="border-0 px-3 py-3 w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
         <option value="PLN">PLN</option>
-        <option value="PDAM">PDAM</option>
+        <!-- <option value="PDAM">PDAM</option> -->
       </select>
       <input
         type="text"
@@ -126,24 +133,40 @@ const reset = () => {
     <div v-if="response_code">
       <div v-if="response_code === '00'">
         <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
-        <p class="mb-16 mx-auto intro sm:max-w-xl">
-          "ID: {{ id_customer }}"
-        </p>
-        <div class="flex flex-col flex-wrap justify-center mb-10 px-10 sm:flex-row gap-x-1.5">
+        <div class="w-full md:w-1/2 lg:w-1/2 mx-auto mb-5 p-4 bg-white rounded-xl">
+          <div class="flex flex-column text-md justify-evenly">
+            <div class="w-auto font-bold">
+              <h2 class="line-clamp-1 ">ID Customer</h2>             
+              <h2 class="line-clamp-1">Admin</h2>             
+              <h2 class="line-clamp-1">Nominal</h2>             
+              <h2 class="line-clamp-1">Price</h2>
+              <h2 class="line-clamp-2">Period</h2>
+            </div>
+            <div class="w-auto">
+              <p class="line-clamp-1">{{ detail_data.id_customer }}</p>         
+              <p class="line-clamp-1">Rp. {{ format_price(detail_data.admin) }}</p>             
+              <p class="line-clamp-1">Rp. {{ format_price(detail_data.nominal) }}</p>             
+              <p class="line-clamp-1">Rp. {{ format_price(detail_data.price) }}</p>
+              <p class="line-clamp-2">{{ detail_data.period.replace(',', ' - ') }}</p>         
+            </div>
+          </div>
+          <p class="text-gray-400 text-sm italic">*nominal excluding admin and other fee</p>
+          <p class="text-gray-400 text-sm italic">*price is nominal + admin fee + other fee</p>
+        </div>
+        <div class="flex flex-row flex-wrap justify-center mb-10 lg:mx-16 px-10 sm:flex-row gap-x-1.5">
           <div 
-            class="flex flex-col bg-white border border-gray-300 rounded-xl overflow-hidden items-center mb-8 w-full sm:mb-16 md:w-auto lg:w-auto" style="cursor: auto;"
+            class="flex flex-col bg-white border border-gray-300 rounded-xl overflow-hidden items-center my-1 w-full md:w-1/3 lg:w-1/4" style="cursor: auto;"
             v-for="(bill, index) in result_bills"
             :key="index"
           >
             <div class="flex px-2 py-1 w-full">
               <div class="relative w-16 h-16 flex-shrink-0">    
                 <div class="w-full h-full flex items-center justify-center">                            
-                  <img alt="Placeholder Photo" class="w-full h-full rounded-full object-cover object-center transition duration-50" loading="lazy" :src="`https://ui-avatars.com/api/?name=${customer}&amp;background=4e73df&amp;color=ffffff&amp;size=100`">                        
+                  <img alt="Placeholder Photo" class="w-full h-full rounded-full object-cover object-center transition duration-50" loading="lazy" :src="`https://ui-avatars.com/api/?name=${detail_data.customer}&amp;background=4e73df&amp;color=ffffff&amp;size=100`">                        
                 </div>                     
               </div>                        
               <div class="px-4">                     
-                <h1 class="text-md line-clamp-1 title text-gray-500 text-lg mb-0">{{ customer }}</h1>             
-                <h2 class="text-sm text-gray-600 mt-1 line-clamp-2">{{ id_customer }}</h2>               
+                <h1 class="text-md line-clamp-1 title text-gray-500 text-lg mb-0">{{ detail_data.customer }}</h1>             
                 <span class="flex items-center justify-start text-gray-500">                         
                   <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"></path>
@@ -154,10 +177,20 @@ const reset = () => {
             </div>
             <div class="px-2 py-1 w-full">
               <div class="my-1 border-t w-full"></div>
-              <p class="text-sm line-clamp-1">Bill: Rp. {{ format_price(bill.nilai_tagihan) }}</p>             
-              <p class="text-sm line-clamp-1">Adm: Rp. {{ format_price(bill.admin) }}</p>             
-              <p class="text-sm line-clamp-1">Fine: Rp. {{ format_price(bill.denda) }}</p>             
-              <p class="text-sm line-clamp-2">Total: Rp. {{ format_price(bill.total) }}</p>
+              <div class="flex flex-column w-full text-md justify-evenly">
+                <div class="w-auto font-bold">
+                  <h2 class="line-clamp-1 ">Bill</h2>             
+                  <h2 class="line-clamp-1">Adm</h2>             
+                  <h2 class="line-clamp-1">Fine</h2>             
+                  <h2 class="line-clamp-2">Total</h2>
+                </div>
+                <div class="w-auto">
+                  <p class="line-clamp-1">Rp. {{ format_price(bill.nilai_tagihan) }}</p>             
+                  <p class="line-clamp-1">Rp. {{ format_price(bill.admin) }}</p>             
+                  <p class="line-clamp-1">Rp. {{ format_price(bill.denda) }}</p>             
+                  <p class="line-clamp-2">Rp. {{ format_price(bill.total) }}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -216,7 +249,7 @@ const reset = () => {
       <div v-else>
         <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
         <p class="mb-16 mx-auto intro sm:max-w-xl">
-          "{{ message }}"
+          "{{ detail_data.message }}"
         </p>
       </div>
     </div>
