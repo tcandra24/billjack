@@ -41,7 +41,7 @@ const checkBill = async () => {
 
   let { data } = await http.post("/bill/check", dataForm);
   response_code.value = data.data.response_code
-
+  let period = data.data.period.split(',')
   detail_data.value = {
     id_customer: data.data.hp,
     message: data.data.message,
@@ -49,16 +49,23 @@ const checkBill = async () => {
     admin: data.data.admin,
     nominal: data.data.nominal,
     price: data.data.price,
-    period: data.data.period,
+    period: {
+      first: period[0],
+      last: period[1]
+    },
   }
 
-  console.log(data.data)
 
   if(response_code.value === '00'){
-    result_bills.value = data.data.desc.tagihan.detail
+    if(type_bill.value == 'PLN') {
+      result_bills.value = data.data.desc.tagihan.detail
+    } else {
+      result_bills.value = data.data.desc.bill.detail
+    }
   } else {
     result_bills.value = []
   }
+    console.log(result_bills.value)
 }
 
 const format_price = (value) => {
@@ -98,7 +105,7 @@ const reset = () => {
     <div class="my-8 mx-auto max-w-xl xl:max-w-2xl">
       <select v-model="type_bill" @change="input_number = ''" class="border-0 px-3 py-3 w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
         <option value="PLN">PLN</option>
-        <!-- <option value="PDAM">PDAM</option> -->
+        <option value="PDAM">PDAM</option>
       </select>
       <input
         type="text"
@@ -133,21 +140,28 @@ const reset = () => {
     <div v-if="response_code">
       <div v-if="response_code === '00'">
         <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
-        <div class="w-full md:w-1/2 lg:w-1/2 mx-auto mb-5 p-4 bg-white rounded-xl">
-          <div class="flex flex-column text-md justify-evenly">
+        <div class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl">
+          <div class="flex flex-column text-md justify-between">
             <div class="w-auto font-bold">
-              <h2 class="line-clamp-1 ">ID Customer</h2>             
-              <h2 class="line-clamp-1">Admin</h2>             
-              <h2 class="line-clamp-1">Nominal</h2>             
-              <h2 class="line-clamp-1">Price</h2>
-              <h2 class="line-clamp-2">Period</h2>
+              <h2 class="line-clamp-1 py-1">ID Customer</h2>             
+              <h2 class="line-clamp-1 py-1">Admin</h2>             
+              <h2 class="line-clamp-1 py-1">Nominal</h2>             
+              <h2 class="line-clamp-1 py-1">Price</h2>
+              <h2 class="line-clamp-2 py-1">Period</h2>
             </div>
             <div class="w-auto">
-              <p class="line-clamp-1">{{ detail_data.id_customer }}</p>         
-              <p class="line-clamp-1">Rp. {{ format_price(detail_data.admin) }}</p>             
-              <p class="line-clamp-1">Rp. {{ format_price(detail_data.nominal) }}</p>             
-              <p class="line-clamp-1">Rp. {{ format_price(detail_data.price) }}</p>
-              <p class="line-clamp-2">{{ detail_data.period.replace(',', ' - ') }}</p>         
+              <p class="line-clamp-1 py-1">{{ detail_data.id_customer }}</p>         
+              <p class="line-clamp-1 py-1">Rp. {{ format_price(detail_data.admin) }}</p>             
+              <p class="line-clamp-1 py-1">Rp. {{ format_price(detail_data.nominal) }}</p>             
+              <p class="line-clamp-1 py-1">Rp. {{ format_price(detail_data.price) }}</p>
+              <p class="line-clamp-2 py-1" v-if="detail_data.period.last">
+                {{ moment(detail_data.period.first + '10').format("MMMM YYYY")  }} 
+                - 
+                {{ moment(detail_data.period.last + '10').format("MMMM YYYY")  }}
+              </p>
+              <p class="line-clamp-2 py-1" v-else>
+                {{ moment(detail_data.period.first + '10').format("MMMM YYYY")  }}
+              </p>            
             </div>
           </div>
           <p class="text-gray-400 text-sm italic">*nominal excluding admin and other fee</p>
@@ -171,7 +185,12 @@ const reset = () => {
                   <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"></path>
                   </svg>
-                  {{ moment(bill.periode + '10').format("MMMM YYYY")  }}                      
+                  <div v-if="type_bill == 'PLN'">
+                    {{ moment(bill.periode + '10').format("MMMM YYYY")  }}                      
+                  </div>
+                  <div v-else>
+                    {{ moment(bill.period + '10').format("MMMM YYYY")  }}    
+                  </div>
                 </span>               
               </div>
             </div>
@@ -179,16 +198,35 @@ const reset = () => {
               <div class="my-1 border-t w-full"></div>
               <div class="flex flex-column w-full text-md justify-evenly">
                 <div class="w-auto font-bold">
-                  <h2 class="line-clamp-1 ">Bill</h2>             
-                  <h2 class="line-clamp-1">Adm</h2>             
-                  <h2 class="line-clamp-1">Fine</h2>             
-                  <h2 class="line-clamp-2">Total</h2>
+                  
+                  <div v-if="type_bill == 'PLN'">
+                    <h2 class="line-clamp-1 ">Bill</h2>             
+                    <h2 class="line-clamp-1">Adm</h2>             
+                    <h2 class="line-clamp-1">Fine</h2>             
+                    <h2 class="line-clamp-2">Total</h2>
+                  </div>
+                  <div v-else>
+                    <h2 class="line-clamp-1 py-1">Bill Amount</h2>             
+                    <h2 class="line-clamp-1 py-1">First Meter</h2>             
+                    <h2 class="line-clamp-1 py-1">Last Meter</h2>             
+                    <h2 class="line-clamp-1 py-1">Misc Amount</h2>
+                    <h2 class="line-clamp-2 py-1">Penalty</h2>
+                  </div>
                 </div>
                 <div class="w-auto">
-                  <p class="line-clamp-1">Rp. {{ format_price(bill.nilai_tagihan) }}</p>             
-                  <p class="line-clamp-1">Rp. {{ format_price(bill.admin) }}</p>             
-                  <p class="line-clamp-1">Rp. {{ format_price(bill.denda) }}</p>             
-                  <p class="line-clamp-2">Rp. {{ format_price(bill.total) }}</p>
+                  <div v-if="type_bill == 'PLN'"> 
+                    <p class="line-clamp-1">Rp. {{ format_price(bill.nilai_tagihan) }}</p>             
+                    <p class="line-clamp-1">Rp. {{ format_price(bill.admin) }}</p>             
+                    <p class="line-clamp-1">Rp. {{ format_price(bill.denda) }}</p>             
+                    <p class="line-clamp-2">Rp. {{ format_price(bill.total) }}</p>
+                  </div>
+                  <div v-else> 
+                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.bill_amount) }}</p>         
+                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.first_meter) }}</p>             
+                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.last_meter) }}</p>             
+                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.misc_amount) }}</p>
+                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.penalty) }}</p>
+                  </div>
                 </div>
               </div>
             </div>
