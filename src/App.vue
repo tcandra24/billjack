@@ -1,10 +1,11 @@
 <script setup>
-import { ref } from "@vue/runtime-core";
+import { ref, shallowRef } from "@vue/runtime-core";
 import http from "./plugins/http-common";
 import md5 from "md5";
 import moment from 'moment';
 import city from './json/pdam/city'
-// sudah bisa get data pdam belum menata tiap property saat pdam dipilih
+import PLNComponent from './components/PLNComponent.vue'
+import PDAMComponent from './components/PDAMComponent.vue'
 
 let result_bills = ref([]);
 let input_number = ref();
@@ -15,6 +16,7 @@ let pdam_code = ref('PDAMKOTA.SURABAYA');
 let api_key = ref(import.meta.env.VITE_API_KEY)
 let title = ref(import.meta.env.VITE_APP_TITLE)
 let version = ref(import.meta.env.VITE_APP_VERSION)
+let component = shallowRef(PLNComponent)
 
 document.title = title.value
 
@@ -59,8 +61,10 @@ const checkBill = async () => {
   if(response_code.value === '00'){
     if(type_bill.value == 'PLN') {
       result_bills.value = data.data.desc.tagihan.detail
+      component.value = PLNComponent
     } else {
       result_bills.value = data.data.desc.bill.detail
+      component.value = PDAMComponent
     }
   } else {
     result_bills.value = []
@@ -102,18 +106,20 @@ const reset = () => {
       Check your bill with <span class="text-blue-700">{{ title }}</span>
     </h1>
 
-    <div class="my-8 mx-auto max-w-xl xl:max-w-2xl">
-      <select v-model="type_bill" @change="input_number = ''" class="border-0 px-3 py-3 w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
-        <option value="PLN">PLN</option>
-        <option value="PDAM">PDAM</option>
-      </select>
-      <input
-        type="text"
-        class="border-0 px-3 py-3 w-4/5 placeholder-gray-300 text-gray-600 bg-white rounded-r-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150"
-        placeholder="Customer Number"
-        v-model="input_number"
-      />
-      <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="input_number = ''" class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
+    <div class="my-8 mx-auto max-w-xl xl:max-w-2xl flex flex-col">
+      <div class="flex flex-row w-full">
+        <select v-model="type_bill" @change="reset" class="border-0 px-3 py-3 w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
+          <option value="PLN">PLN</option>
+          <option value="PDAM">PDAM</option>
+        </select>
+        <input
+          type="text"
+          class="border-0 px-3 py-3 w-4/5 placeholder-gray-300 text-gray-600 bg-white rounded-r-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150"
+          placeholder="Customer Number"
+          v-model="input_number"
+        />
+      </div>
+      <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="reset" class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
         <option v-for="(city, index) in city" :value="city.code" > {{ city.name }} </option>
       </select>
     </div>
@@ -168,69 +174,8 @@ const reset = () => {
           <p class="text-gray-400 text-sm italic">*price is nominal + admin fee + other fee</p>
         </div>
         <div class="flex flex-row flex-wrap justify-center mb-10 lg:mx-16 px-10 sm:flex-row gap-x-1.5">
-          <div 
-            class="flex flex-col bg-white border border-gray-300 rounded-xl overflow-hidden items-center my-1 w-full md:w-1/3 lg:w-1/4" style="cursor: auto;"
-            v-for="(bill, index) in result_bills"
-            :key="index"
-          >
-            <div class="flex px-2 py-1 w-full">
-              <div class="relative w-16 h-16 flex-shrink-0">    
-                <div class="w-full h-full flex items-center justify-center">                            
-                  <img alt="Placeholder Photo" class="w-full h-full rounded-full object-cover object-center transition duration-50" loading="lazy" :src="`https://ui-avatars.com/api/?name=${detail_data.customer}&amp;background=4e73df&amp;color=ffffff&amp;size=100`">                        
-                </div>                     
-              </div>                        
-              <div class="px-4">                     
-                <h1 class="text-md line-clamp-1 title text-gray-500 text-lg mb-0">{{ detail_data.customer }}</h1>             
-                <span class="flex items-center justify-start text-gray-500">                         
-                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"></path>
-                  </svg>
-                  <div v-if="type_bill == 'PLN'">
-                    {{ moment(bill.periode + '10').format("MMMM YYYY")  }}                      
-                  </div>
-                  <div v-else>
-                    {{ moment(bill.period + '10').format("MMMM YYYY")  }}    
-                  </div>
-                </span>               
-              </div>
-            </div>
-            <div class="px-2 py-1 w-full">
-              <div class="my-1 border-t w-full"></div>
-              <div class="flex flex-column w-full text-md justify-evenly">
-                <div class="w-auto font-bold">
-                  
-                  <div v-if="type_bill == 'PLN'">
-                    <h2 class="line-clamp-1 ">Bill</h2>             
-                    <h2 class="line-clamp-1">Adm</h2>             
-                    <h2 class="line-clamp-1">Fine</h2>             
-                    <h2 class="line-clamp-2">Total</h2>
-                  </div>
-                  <div v-else>
-                    <h2 class="line-clamp-1 py-1">Bill Amount</h2>             
-                    <h2 class="line-clamp-1 py-1">First Meter</h2>             
-                    <h2 class="line-clamp-1 py-1">Last Meter</h2>             
-                    <h2 class="line-clamp-1 py-1">Misc Amount</h2>
-                    <h2 class="line-clamp-2 py-1">Penalty</h2>
-                  </div>
-                </div>
-                <div class="w-auto">
-                  <div v-if="type_bill == 'PLN'"> 
-                    <p class="line-clamp-1">Rp. {{ format_price(bill.nilai_tagihan) }}</p>             
-                    <p class="line-clamp-1">Rp. {{ format_price(bill.admin) }}</p>             
-                    <p class="line-clamp-1">Rp. {{ format_price(bill.denda) }}</p>             
-                    <p class="line-clamp-2">Rp. {{ format_price(bill.total) }}</p>
-                  </div>
-                  <div v-else> 
-                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.bill_amount) }}</p>         
-                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.first_meter) }}</p>             
-                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.last_meter) }}</p>             
-                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.misc_amount) }}</p>
-                    <p class="line-clamp-1 py-1">Rp. {{ format_price(bill.penalty) }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            <component :is="component" :array="result_bills" :detail="detail_data">
+            </component>
         </div>
         <!-- <ul
           class="flex flex-col flex-wrap justify-center mb-20 border-b border-gray-900 sm:flex-row"
