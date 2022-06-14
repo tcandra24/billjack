@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef } from "@vue/runtime-core";
+import { computed, ref, shallowRef } from "@vue/runtime-core";
 import http from "./plugins/http-common";
 import md5 from "md5";
 import moment from 'moment';
@@ -17,8 +17,19 @@ let api_key = ref(import.meta.env.VITE_API_KEY)
 let title = ref(import.meta.env.VITE_APP_TITLE)
 let version = ref(import.meta.env.VITE_APP_VERSION)
 let component = shallowRef(PLNComponent)
+let isDark = ref(false)
 
 document.title = title.value
+
+const darkTheme = computed(() => {
+  if(isDark.value) {
+    document.documentElement.classList.add('dark')
+    return true
+  } else {
+    document.documentElement.classList.remove('dark')
+    return false
+  }
+})
 
 const checkBill = async () => {
   let uniq = "id" + new Date().getTime();
@@ -43,22 +54,23 @@ const checkBill = async () => {
 
   let { data } = await http.post("/bill/check", dataForm);
   response_code.value = data.data.response_code
-  let period = data.data.period.split(',')
-  detail_data.value = {
-    id_customer: data.data.hp,
-    message: data.data.message,
-    customer: data.data.tr_name,
-    admin: data.data.admin,
-    nominal: data.data.nominal,
-    price: data.data.price,
-    period: {
-      first: period[0],
-      last: period[1]
-    },
-  }
-
+  console.log(data.data)
 
   if(response_code.value === '00'){
+    let period = data.data.period.split(',')
+    detail_data.value = {
+      id_customer: data.data.hp,
+      message: data.data.message,
+      customer: data.data.tr_name,
+      admin: data.data.admin,
+      nominal: data.data.nominal,
+      price: data.data.price,
+      period: {
+        first: period[0],
+        last: period[1]
+      },
+    }
+    
     if(type_bill.value == 'PLN') {
       result_bills.value = data.data.desc.tagihan.detail
       component.value = PLNComponent
@@ -67,9 +79,11 @@ const checkBill = async () => {
       component.value = PDAMComponent
     }
   } else {
+      detail_data.value = {
+        message: data.data.message,
+      }
     result_bills.value = []
   }
-    console.log(result_bills.value)
 }
 
 const format_price = (value) => {
@@ -94,32 +108,58 @@ const reset = () => {
         <img class="block w-8 h-8" src="./assets/img/logo.svg" alt="" />
       </a>
       <div class="flex items-center mb-4 md:block">
-        <a class="mr-8 font-semibold hover:text-white" href="#"
+        <a class="mr-8 font-semibold dark:hover:text-white" href="#"
           >About</a
         >
-        <p class="btn text-gray-400 hover:text-white">{{ version }} </p>
+        <p class="btn mr-8 text-gray-400 dark:hover:text-white">{{ version }} </p>
+        <button @click="isDark = !isDark" class="btn text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1">
+          <svg
+            class="w-5 h-5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+            v-if="darkTheme"
+          >
+            <path
+              d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
+            ></path>
+          </svg>
+          <svg
+            class="w-5 h-5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+            v-else
+          >
+            <path
+              d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+        </button>
       </div>
     </div>
     <h1
-      class="px-8 mt-16 mb-4 text-5xl font-extrabold leading-tight text-center text-white xl:text-6xl"
+      class="px-8 mt-16 mb-4 text-5xl font-extrabold leading-tight text-center text-gray-700 dark:text-white xl:text-6xl"
     >
       Check your bill with <span class="text-blue-700">{{ title }}</span>
     </h1>
 
     <div class="my-8 mx-auto max-w-xl xl:max-w-2xl flex flex-col">
       <div class="flex flex-row w-full">
-        <select v-model="type_bill" @change="reset" class="border-0 px-3 py-3 w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
+        <select v-model="type_bill" @change="reset" class="border-0 px-3 py-3 w-1/3 md:w-1/4 lg:w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow-lg border-solid border-l-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150">
           <option value="PLN">PLN</option>
           <option value="PDAM">PDAM</option>
         </select>
         <input
           type="text"
-          class="border-0 px-3 py-3 w-4/5 placeholder-gray-300 text-gray-600 bg-white rounded-r-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150"
+          class="border-0 px-3 py-3 w-4/5 placeholder-gray-300 text-gray-600 bg-white rounded-r-full shadow-lg border-solid border-r-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150"
           placeholder="Customer Number"
           v-model="input_number"
         />
       </div>
-      <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="reset" class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow focus:outline-none focus:ring ease-linear transition-all duration-150">
+      <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="reset" class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow-lg border-solid border-2 focus:outline-none focus:ring ease-linear transition-all duration-150">
         <option v-for="(city, index) in city" :value="city.code" > {{ city.name }} </option>
       </select>
     </div>
@@ -292,8 +332,8 @@ const reset = () => {
     <div class="flex flex-col justify-between mb-8 text-center sm:flex-row">
       <p class="order-last mb-4 text-sm text-gray-500 sm:order-first">
         Designed by
-        <a href="https://cruip.com/" class="text-white">Cruip</a>. Coded by
-        <a href="https://michelegera.dev/" class="text-white">michelegera</a>
+        <a href="https://cruip.com/" class="text-black dark:text-white">Cruip</a>. Coded by
+        <a href="https://michelegera.dev/" class="text-black dark:text-white">michelegera</a>
       </p>
     </div>
   </div>
