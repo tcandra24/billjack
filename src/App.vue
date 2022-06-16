@@ -103,7 +103,7 @@ const reset = () => {
   <div class="absolute inset-0 bg-center bg-no-repeat bg-illustration-02"></div>
   <div class="container relative mx-auto">
     <div class="flex items-center justify-between py-6 px-2">
-      <a :href="window.location.origin">
+      <a href="#">
         <img class="block w-8 h-8" src="./assets/img/logo.svg" alt="" />
       </a>
       <div class="flex items-center mb-4 md:block">
