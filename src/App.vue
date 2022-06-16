@@ -54,7 +54,6 @@ const checkBill = async () => {
 
   let { data } = await http.post("/bill/check", dataForm);
   response_code.value = data.data.response_code
-  console.log(data.data)
 
   if(response_code.value === '00'){
     let period = data.data.period.split(',')
@@ -103,8 +102,8 @@ const reset = () => {
   <div class="absolute inset-0 bg-top bg-no-repeat bg-illustration-01"></div>
   <div class="absolute inset-0 bg-center bg-no-repeat bg-illustration-02"></div>
   <div class="container relative mx-auto">
-    <div class="flex items-center justify-between py-6">
-      <a href="#">
+    <div class="flex items-center justify-between py-6 px-2">
+      <a :href="window.location.origin">
         <img class="block w-8 h-8" src="./assets/img/logo.svg" alt="" />
       </a>
       <div class="flex items-center mb-4 md:block">
