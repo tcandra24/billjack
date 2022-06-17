@@ -2,45 +2,45 @@
 import { computed, ref, shallowRef } from "@vue/runtime-core";
 import http from "./plugins/http-common";
 import md5 from "md5";
-import moment from 'moment';
-import city from './json/pdam/city'
-import PLNComponent from './components/PLNComponent.vue'
-import PDAMComponent from './components/PDAMComponent.vue'
+import moment from "moment";
+import city from "./json/pdam/city";
+import PLNComponent from "./components/PLNComponent.vue";
+import PDAMComponent from "./components/PDAMComponent.vue";
 
 let result_bills = ref([]);
 let input_number = ref();
-let response_code = ref('');
+let response_code = ref("");
 let detail_data = ref({});
-let type_bill = ref('PLN');
-let pdam_code = ref('PDAMKOTA.SURABAYA');
-let api_key = ref(import.meta.env.VITE_API_KEY)
-let title = ref(import.meta.env.VITE_APP_TITLE)
-let version = ref(import.meta.env.VITE_APP_VERSION)
-let component = shallowRef(PLNComponent)
-let isDark = ref(false)
+let type_bill = ref("PLN");
+let pdam_code = ref("PDAMKOTA.SURABAYA");
+let api_key = ref(import.meta.env.VITE_API_KEY);
+let title = ref(import.meta.env.VITE_APP_TITLE);
+let version = ref(import.meta.env.VITE_APP_VERSION);
+let component = shallowRef(PLNComponent);
+let isDark = ref(false);
 
-document.title = title.value
+document.title = title.value;
 
 const darkTheme = computed(() => {
-  if(isDark.value) {
-    document.documentElement.classList.add('dark')
-    return true
+  if (isDark.value) {
+    document.documentElement.classList.add("dark");
+    return true;
   } else {
-    document.documentElement.classList.remove('dark')
-    return false
+    document.documentElement.classList.remove("dark");
+    return false;
   }
-})
+});
 
 const checkBill = async () => {
   let uniq = "id" + new Date().getTime();
   let user = "0895401001560";
   let sign = md5(user + api_key.value + uniq);
-  let code = ''
-  
-  if (type_bill.value == 'PLN') {
-    code = 'PLNPOSTPAID'
+  let code = "";
+
+  if (type_bill.value == "PLN") {
+    code = "PLNPOSTPAID";
   } else {
-    code = pdam_code.value
+    code = pdam_code.value;
   }
 
   let dataForm = {
@@ -53,10 +53,10 @@ const checkBill = async () => {
   };
 
   let { data } = await http.post("/bill/check", dataForm);
-  response_code.value = data.data.response_code
+  response_code.value = data.data.response_code;
 
-  if(response_code.value === '00'){
-    let period = data.data.period.split(',')
+  if (response_code.value === "00") {
+    let period = data.data.period.split(",");
     detail_data.value = {
       id_customer: data.data.hp,
       message: data.data.message,
@@ -66,36 +66,36 @@ const checkBill = async () => {
       price: data.data.price,
       period: {
         first: period[0],
-        last: period[1]
+        last: period[1],
       },
-    }
-    
-    if(type_bill.value == 'PLN') {
-      result_bills.value = data.data.desc.tagihan.detail
-      component.value = PLNComponent
+    };
+
+    if (type_bill.value == "PLN") {
+      result_bills.value = data.data.desc.tagihan.detail;
+      component.value = PLNComponent;
     } else {
-      result_bills.value = data.data.desc.bill.detail
-      component.value = PDAMComponent
+      result_bills.value = data.data.desc.bill.detail;
+      component.value = PDAMComponent;
     }
   } else {
-      detail_data.value = {
-        message: data.data.message,
-      }
-    result_bills.value = []
+    detail_data.value = {
+      message: data.data.message,
+    };
+    result_bills.value = [];
   }
-}
+};
 
 const format_price = (value) => {
-  let val = (value/1).toFixed(0).replace('.', ',')
-  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-}
+  let val = (value / 1).toFixed(0).replace(".", ",");
+  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
 
 const reset = () => {
-  input_number.value = ''
-  response_code.value = ''
-  result_bills.value = []
-  detail_data.value = {}
-}
+  input_number.value = "";
+  response_code.value = "";
+  result_bills.value = [];
+  detail_data.value = {};
+};
 </script>
 
 <template>
@@ -104,14 +104,21 @@ const reset = () => {
   <div class="container relative mx-auto">
     <div class="flex items-center justify-between py-6 px-2">
       <a href="#">
-        <img class="block w-8 h-8" src="./assets/img/logo.svg" alt="" />
+        <img
+          class="block w-24 h-24"
+          src="./assets/img/billjack-logo.png"
+          alt="Logo Billjack"
+        />
       </a>
       <div class="flex items-center mb-4 md:block">
-        <a class="mr-8 font-semibold dark:hover:text-white" href="#"
-          >About</a
+        <a class="mr-8 font-semibold dark:hover:text-white" href="#">About</a>
+        <p class="btn mr-8 text-gray-400 dark:hover:text-white">
+          {{ version }}
+        </p>
+        <button
+          @click="isDark = !isDark"
+          class="btn text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1"
         >
-        <p class="btn mr-8 text-gray-400 dark:hover:text-white">{{ version }} </p>
-        <button @click="isDark = !isDark" class="btn text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1">
           <svg
             class="w-5 h-5"
             fill="currentColor"
@@ -147,7 +154,11 @@ const reset = () => {
 
     <div class="my-8 mx-auto max-w-xl xl:max-w-2xl flex flex-col">
       <div class="flex flex-row w-full">
-        <select v-model="type_bill" @change="reset" class="border-0 px-3 py-3 w-1/3 md:w-1/4 lg:w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow-lg border-solid border-l-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150">
+        <select
+          v-model="type_bill"
+          @change="reset"
+          class="border-0 px-3 py-3 w-1/3 md:w-1/4 lg:w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow-lg border-solid border-l-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150"
+        >
           <option value="PLN">PLN</option>
           <option value="PDAM">PDAM</option>
         </select>
@@ -158,8 +169,15 @@ const reset = () => {
           v-model="input_number"
         />
       </div>
-      <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="reset" class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow-lg border-solid border-2 focus:outline-none focus:ring ease-linear transition-all duration-150">
-        <option v-for="(city, index) in city" :value="city.code" > {{ city.name }} </option>
+      <select
+        v-model="pdam_code"
+        v-show="type_bill == 'PDAM'"
+        @change="reset"
+        class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow-lg border-solid border-2 focus:outline-none focus:ring ease-linear transition-all duration-150"
+      >
+        <option v-for="(city, index) in city" :value="city.code">
+          {{ city.name }}
+        </option>
       </select>
     </div>
 
@@ -169,8 +187,8 @@ const reset = () => {
     <div
       class="flex flex-col justify-center max-w-xs mx-auto mb-12 sm:max-w-full sm:flex-row"
     >
-      <button 
-        class="w-full mb-4 whitespace-no-wrap bg-blue-600 btn btn-tall md:w-auto hover:bg-blue-500 sm:mr-2" 
+      <button
+        class="w-full mb-4 whitespace-no-wrap bg-blue-600 btn btn-tall md:w-auto hover:bg-blue-500 sm:mr-2"
         @click="checkBill"
       >
         Check
@@ -185,36 +203,58 @@ const reset = () => {
     <div v-if="response_code">
       <div v-if="response_code === '00'">
         <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
-        <div class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl">
+        <div
+          class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl"
+        >
           <div class="flex flex-column text-md justify-between">
             <div class="w-auto font-bold">
-              <h2 class="line-clamp-1 py-1">ID Customer</h2>             
-              <h2 class="line-clamp-1 py-1">Admin</h2>             
-              <h2 class="line-clamp-1 py-1">Nominal</h2>             
+              <h2 class="line-clamp-1 py-1">ID Customer</h2>
+              <h2 class="line-clamp-1 py-1">Admin</h2>
+              <h2 class="line-clamp-1 py-1">Nominal</h2>
               <h2 class="line-clamp-1 py-1">Price</h2>
               <h2 class="line-clamp-2 py-1">Period</h2>
             </div>
             <div class="w-auto">
-              <p class="line-clamp-1 py-1">{{ detail_data.id_customer }}</p>         
-              <p class="line-clamp-1 py-1">Rp. {{ format_price(detail_data.admin) }}</p>             
-              <p class="line-clamp-1 py-1">Rp. {{ format_price(detail_data.nominal) }}</p>             
-              <p class="line-clamp-1 py-1">Rp. {{ format_price(detail_data.price) }}</p>
+              <p class="line-clamp-1 py-1">{{ detail_data.id_customer }}</p>
+              <p class="line-clamp-1 py-1">
+                Rp. {{ format_price(detail_data.admin) }}
+              </p>
+              <p class="line-clamp-1 py-1">
+                Rp. {{ format_price(detail_data.nominal) }}
+              </p>
+              <p class="line-clamp-1 py-1">
+                Rp. {{ format_price(detail_data.price) }}
+              </p>
               <p class="line-clamp-2 py-1" v-if="detail_data.period.last">
-                {{ moment(detail_data.period.first + '10').format("MMMM YYYY")  }} 
-                - 
-                {{ moment(detail_data.period.last + '10').format("MMMM YYYY")  }}
+                {{
+                  moment(detail_data.period.first + "10").format("MMMM YYYY")
+                }}
+                -
+                {{ moment(detail_data.period.last + "10").format("MMMM YYYY") }}
               </p>
               <p class="line-clamp-2 py-1" v-else>
-                {{ moment(detail_data.period.first + '10').format("MMMM YYYY")  }}
-              </p>            
+                {{
+                  moment(detail_data.period.first + "10").format("MMMM YYYY")
+                }}
+              </p>
             </div>
           </div>
-          <p class="text-gray-400 text-sm italic">*nominal excluding admin and other fee</p>
-          <p class="text-gray-400 text-sm italic">*price is nominal + admin fee + other fee</p>
+          <p class="text-gray-400 text-sm italic">
+            *nominal excluding admin and other fee
+          </p>
+          <p class="text-gray-400 text-sm italic">
+            *price is nominal + admin fee + other fee
+          </p>
         </div>
-        <div class="flex flex-row flex-wrap justify-center mb-10 lg:mx-16 px-10 sm:flex-row gap-x-1.5">
-            <component :is="component" :array="result_bills" :detail="detail_data">
-            </component>
+        <div
+          class="flex flex-row flex-wrap justify-center mb-10 lg:mx-16 px-10 sm:flex-row gap-x-1.5"
+        >
+          <component
+            :is="component"
+            :array="result_bills"
+            :detail="detail_data"
+          >
+          </component>
         </div>
         <!-- <ul
           class="flex flex-col flex-wrap justify-center mb-20 border-b border-gray-900 sm:flex-row"
@@ -331,8 +371,11 @@ const reset = () => {
     <div class="flex flex-col justify-between mb-8 text-center sm:flex-row">
       <p class="order-last mb-4 text-sm text-gray-500 sm:order-first">
         Designed by
-        <a href="https://cruip.com/" class="text-black dark:text-white">Cruip</a>. Coded by
-        <a href="https://michelegera.dev/" class="text-black dark:text-white">michelegera</a>
+        <a href="https://cruip.com/" class="text-black dark:text-white">Cruip</a
+        >. Coded by
+        <a href="https://michelegera.dev/" class="text-black dark:text-white"
+          >michelegera</a
+        >
       </p>
     </div>
   </div>
