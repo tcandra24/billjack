@@ -108,10 +108,11 @@ const reset = () => {
           class="block w-24 h-24"
           src="./assets/img/billjack-logo.png"
           alt="Logo Billjack"
+          :class="{ 'invert-image': darkTheme }"
         />
       </a>
       <div class="flex items-center mb-4 md:block">
-        <a class="mr-8 font-semibold dark:hover:text-white" href="#">About</a>
+        <a class="mr-4 font-semibold dark:hover:text-white" href="#">About</a>
         <p class="btn mr-8 text-gray-400 dark:hover:text-white">
           {{ version }}
         </p>
@@ -383,4 +384,7 @@ const reset = () => {
 
 <style>
 @import "./assets/base.css";
+.invert-image {
+  filter: invert(100%);
+}
 </style>
