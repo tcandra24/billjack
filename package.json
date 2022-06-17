@@ -12,7 +12,8 @@
     "moment": "^2.29.3",
     "vue": "^3.2.31",
     "vue-axios": "^3.4.1",
-    "vue-meta": "^2.4.0"
+    "vue-meta": "^2.4.0",
+    "vue-router": "^4.0.16"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.2.2",
