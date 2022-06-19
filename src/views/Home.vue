@@ -111,10 +111,10 @@ const reset = () => {
     </select>
   </div>
 
-  <p class="max-w-xl mx-auto mb-8 text-xl text-center xl:max-w-2xl">
+  <p class="max-w-xl mx-auto mb-4 text-xl text-center xl:max-w-2xl">
     This is the way that you can check your Bill easily.
   </p>
-  <div class="flex flex-col justify-center max-w-xs mx-auto mb-12 sm:max-w-full sm:flex-row">
+  <div class="flex flex-col justify-center max-w-xs mx-auto mb-4 sm:max-w-full sm:flex-row">
     <button class="w-full mb-4 whitespace-no-wrap bg-blue-600 btn btn-tall md:w-auto hover:bg-blue-500 sm:mr-2"
       @click="checkBill">
       Check
@@ -126,8 +126,8 @@ const reset = () => {
   </div>
   <div v-if="response_code">
     <div v-if="response_code === '00'">
-      <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
-      <div class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl">
+      <h2 class="title sm:text-4xl md:text-5xl text-gray-700 dark:text-white">Results</h2>
+      <div class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl border border-gray-300">
         <div class="flex flex-column text-md justify-between">
           <div class="w-auto font-bold">
             <h2 class="line-clamp-1 py-1">ID Customer</h2>
@@ -174,7 +174,7 @@ const reset = () => {
       </div>
     </div>
     <div v-else>
-      <h2 class="title sm:text-4xl md:text-5xl">Results</h2>
+      <h2 class="title sm:text-4xl md:text-5xl text-gray-700 dark:text-white">Results</h2>
       <p class="mb-16 mx-auto intro sm:max-w-xl">
         "{{ detail_data.message }}"
       </p>

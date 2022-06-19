@@ -22,21 +22,21 @@
       </div>
     </div>
 
-    <p class="max-w-xl mx-auto mb-8 text-xl text-center xl:max-w-2xl text-justify">
-      Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatem vel placeat rerum obcaecati qui voluptas.
-      Officiis cupiditate ullam sint cum et, consequuntur doloribus architecto praesentium laborum nesciunt illum
-      quisquam reiciendis ad libero alias. Dolores doloribus quisquam qui sunt provident asperiores saepe, iste placeat
-      eveniet eligendi! Provident repellat natus magni, commodi dolore sunt temporibus nam. Provident quasi eius ea
-      accusantium illo itaque impedit sequi vero neque, eaque nobis vel. Ipsam molestias at iure aut animi dolores quam
-      nisi tenetur, doloribus debitis veniam, saepe repellat. Atque cupiditate laborum nihil ea earum dolorum tenetur
-      exercitationem, accusamus eligendi quisquam molestiae vitae, quo necessitatibus dolore. Similique architecto,
-      ducimus soluta doloribus vitae minus saepe quasi aperiam sed, magni pariatur. In, porro maiores ipsum earum optio
-      laboriosam numquam quis vero itaque tenetur quia adipisci, amet illum a blanditiis quaerat sint ducimus? Non fuga
-      odit pariatur labore accusantium voluptatibus exercitationem eum autem saepe sequi? Dicta expedita cumque quia
-      ipsa eveniet sequi vitae repellendus architecto id autem, earum nesciunt inventore totam maxime quibusdam hic
-      consectetur temporibus aperiam, eum neque pariatur similique eaque quaerat? Ipsam reiciendis, repellat quis
-      reprehenderit atque, voluptatum soluta dolorum molestiae nihil accusantium eius nostrum doloribus natus dicta
-      earum fugiat illo vitae laudantium? Voluptatem vel unde dolores?
+    <p class="max-w-xl mx-auto mb-5 text-xl text-center xl:max-w-2xl text-justify">
+      Hey there, Im <a class="text-blue-700" href="https://github.com/tcandra24" target="_blank">Tito Candra</a> From
+      Surabaya, Indonesia
+
+      This app build with
+      <a class="text-blue-700" href="https://vuejs.org/" target="_blank">Vue 3</a>,
+      <a class="text-blue-700" href="https://tailwindcss.com/" target="_blank">Tailwind</a> And
+      <a class="text-blue-700" href="https://vitejs.dev/" target="_blank">Vite</a>. I Hope this app
+      can help people
+      check the
+      bill before they pay the bill, no more ambiguity about the amount of the bill before paying,
+      with billjack people can find out the bill faster.
+    </p>
+    <p class="max-w-xl mx-auto mb-5 text-xl text-center xl:max-w-2xl text-justify">
+      This app support by <a class="text-blue-700" href="https://iak.id/" target="_blank">IAK</a>.
     </p>
   </div>
 </template>

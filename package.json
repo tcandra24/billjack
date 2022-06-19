@@ -1,6 +1,6 @@
 {
   "name": "billjack",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,6 +10,8 @@
     "axios": "^0.26.0",
     "md5": "^2.3.0",
     "moment": "^2.29.3",
+    "pinia": "^2.0.14",
+    "pinia-plugin-persistedstate": "^1.6.1",
     "vue": "^3.2.31",
     "vue-axios": "^3.4.1",
     "vue-meta": "^2.4.0",
