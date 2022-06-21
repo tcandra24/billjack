@@ -88,23 +88,34 @@ const reset = () => {
 
 <template>
   <h1
-    class="px-8 mt-16 mb-4 text-5xl font-extrabold leading-tight text-center text-gray-700 dark:text-white xl:text-6xl">
+    class="px-8 mt-16 mb-4 text-5xl font-extrabold leading-tight text-center text-gray-700 dark:text-white xl:text-6xl"
+  >
     Check your bill with <span class="text-blue-700">{{ title }}</span>
   </h1>
 
-  <div class="my-8 mx-auto max-w-xl xl:max-w-2xl flex flex-col">
+  <div class="my-8 mx-auto max-w-xl xl:max-w-2xl flex flex-col px-2">
     <div class="flex flex-row w-full">
-      <select v-model="type_bill" @change="reset"
-        class="border-0 px-3 py-3 w-1/3 md:w-1/4 lg:w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow-lg border-solid border-l-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150">
+      <select
+        v-model="type_bill"
+        @change="reset"
+        class="border-0 px-3 py-3 w-1/3 md:w-1/4 lg:w-1/5 placeholder-gray-300 text-gray-600 bg-white rounded-l-full shadow-lg border-solid border-l-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150"
+      >
         <option value="PLN">PLN</option>
         <option value="PDAM">PDAM</option>
       </select>
-      <input type="text"
+      <input
+        type="text"
         class="border-0 px-3 py-3 w-4/5 placeholder-gray-300 text-gray-600 bg-white rounded-r-full shadow-lg border-solid border-r-2 border-t-2 border-b-2 focus:outline-none focus:ring ease-linear transition-all duration-150"
-        placeholder="Customer Number" v-model="input_number" />
+        placeholder="Customer Number"
+        v-model="input_number"
+      />
     </div>
-    <select v-model="pdam_code" v-show="type_bill == 'PDAM'" @change="reset"
-      class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow-lg border-solid border-2 focus:outline-none focus:ring ease-linear transition-all duration-150">
+    <select
+      v-model="pdam_code"
+      v-show="type_bill == 'PDAM'"
+      @change="reset"
+      class="border-0 px-3 py-3 my-5 w-full placeholder-gray-300 text-gray-600 bg-white rounded-full shadow-lg border-solid border-2 focus:outline-none focus:ring ease-linear transition-all duration-150"
+    >
       <option v-for="(city, index) in city" :value="city.code">
         {{ city.name }}
       </option>
@@ -114,20 +125,30 @@ const reset = () => {
   <p class="max-w-xl mx-auto mb-4 text-xl text-center xl:max-w-2xl">
     This is the way that you can check your Bill easily.
   </p>
-  <div class="flex flex-col justify-center max-w-xs mx-auto mb-4 sm:max-w-full sm:flex-row">
-    <button class="w-full mb-4 whitespace-no-wrap bg-blue-600 btn btn-tall md:w-auto hover:bg-blue-500 sm:mr-2"
-      @click="checkBill">
+  <div
+    class="flex flex-col justify-center max-w-xs mx-auto mb-4 sm:max-w-full sm:flex-row"
+  >
+    <button
+      class="w-full mb-4 whitespace-no-wrap bg-blue-600 btn btn-tall md:w-auto hover:bg-blue-500 sm:mr-2"
+      @click="checkBill"
+    >
       Check
     </button>
-    <button class="w-full mb-4 whitespace-no-wrap bg-gray-800 btn btn-tall md:w-auto hover:bg-gray-600 sm:ml-2"
-      @click="reset()">
+    <button
+      class="w-full mb-4 whitespace-no-wrap bg-gray-800 btn btn-tall md:w-auto hover:bg-gray-600 sm:ml-2"
+      @click="reset()"
+    >
       Reset
     </button>
   </div>
   <div v-if="response_code">
     <div v-if="response_code === '00'">
-      <h2 class="title sm:text-4xl md:text-5xl text-gray-700 dark:text-white">Results</h2>
-      <div class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl border border-gray-300">
+      <h2 class="title sm:text-4xl md:text-5xl text-gray-700 dark:text-white">
+        Results
+      </h2>
+      <div
+        class="w-full md:w-1/2 lg:w-1/3 mx-auto mb-5 p-4 bg-white rounded-xl border border-gray-300"
+      >
         <div class="flex flex-column text-md justify-between">
           <div class="w-auto font-bold">
             <h2 class="line-clamp-1 py-1">ID Customer</h2>
@@ -148,16 +169,12 @@ const reset = () => {
               Rp. {{ format_price(detail_data.price) }}
             </p>
             <p class="line-clamp-2 py-1" v-if="detail_data.period.last">
-              {{
-                  moment(detail_data.period.first + "10").format("MMMM YYYY")
-              }}
+              {{ moment(detail_data.period.first + "10").format("MMMM YYYY") }}
               -
               {{ moment(detail_data.period.last + "10").format("MMMM YYYY") }}
             </p>
             <p class="line-clamp-2 py-1" v-else>
-              {{
-                  moment(detail_data.period.first + "10").format("MMMM YYYY")
-              }}
+              {{ moment(detail_data.period.first + "10").format("MMMM YYYY") }}
             </p>
           </div>
         </div>
@@ -168,16 +185,18 @@ const reset = () => {
           *price is nominal + admin fee + other fee
         </p>
       </div>
-      <div class="flex flex-row flex-wrap justify-center mb-10 lg:mx-16 px-10 sm:flex-row gap-x-1.5">
+      <div
+        class="flex flex-row flex-wrap justify-center mb-10 lg:mx-16 px-10 sm:flex-row gap-x-1.5"
+      >
         <component :is="component" :array="result_bills" :detail="detail_data">
         </component>
       </div>
     </div>
     <div v-else>
-      <h2 class="title sm:text-4xl md:text-5xl text-gray-700 dark:text-white">Results</h2>
-      <p class="mb-16 mx-auto intro sm:max-w-xl">
-        "{{ detail_data.message }}"
-      </p>
+      <h2 class="title sm:text-4xl md:text-5xl text-gray-700 dark:text-white">
+        Results
+      </h2>
+      <p class="mb-16 mx-auto intro sm:max-w-xl">"{{ detail_data.message }}"</p>
     </div>
   </div>
 </template>
